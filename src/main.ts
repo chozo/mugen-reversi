@@ -1,7 +1,7 @@
 import './style.css';
-import { CpuClient } from './ai/client.ts';
-import { LEVEL_ORDER, LEVELS, type Level, type SearchResult } from './ai/search.ts';
-import { levels, renderPreview, Sound, toWav } from './audio.ts';
+import { CpuClient, toPosition } from './ai/client.ts';
+import { chooseMove, LEVEL_ORDER, LEVELS, type Level, type SearchResult } from './ai/search.ts';
+import { levels, renderPreview, renderSfx, Sound, toWav, type SfxCall } from './audio.ts';
 import { CONFIG } from './config.ts';
 import { Game, opponent, type Color, type GameEvent } from './core/game.ts';
 import { Camera } from './view/camera.ts';
@@ -41,6 +41,23 @@ let gameId = 0;
 /** 一度でも対局を始めたか（対戦設定のキャンセルで戻る先があるか） */
 let started = false;
 
+// ---------- ゲーム内の時計（告知動画の撮影用） ----------
+// 撮影中（manual）は requestAnimationFrame で進めず、__game.step(dt) でゲーム内の時間を進める。
+// アニメーション・カメラ・CPU の間はすべて clock() で測る。
+let manual = false;
+let virtualMs = 0;
+const clock = () => (manual ? virtualMs : performance.now());
+cam.clock = clock;
+/** 撮影中の CPU の手（考え終わった手と、打つ時刻） */
+let pendingCpu: { res: SearchResult | null; at: number; id: number } | null = null;
+/** 撮影用のタッチ操作の状態 */
+let touch: { x0: number; y0: number; x: number; y: number; moved: boolean } | null = null;
+/** 台本に渡す出来事 */
+let promoEvents: Array<Record<string, unknown>> = [];
+const emit = (type: string, data: Record<string, unknown> = {}) => manual && promoEvents.push({ type, ...data });
+/** 着手アニメーション中に、まだ鳴らしていない裏返る音（色が変わる瞬間に鳴らす） */
+let flipSounds: Array<{ at: number; step: number; count: number }> = [];
+
 const isCpu = (c: Color) => c !== mode.human;
 /** 画面に出す呼び名 */
 const who = (c: Color) => (isCpu(c) ? 'CPU' : 'あなた');
@@ -62,13 +79,26 @@ function scene(): Scene {
 }
 
 function requestRender() {
-  if (renderQueued) return;
+  if (manual || renderQueued) return;
   renderQueued = true;
   requestAnimationFrame(frame);
 }
 
 function frame(now: number) {
   renderQueued = false;
+  // 描画で例外が起きてもアニメーションが止まらないよう、次のフレームを先に予約する
+  if (tick(now)) requestRender();
+}
+
+/** 時刻 now の状態に進めて描く。まだ動いているものがあれば true */
+function tick(now: number): boolean {
+  if (anim) {
+    const t = (now - anim.start) * anim.speed;
+    while (flipSounds.length > 0 && t >= flipSounds[0].at) {
+      const f = flipSounds.shift()!;
+      sound.flip(f.step, f.count);
+    }
+  }
   const camMoving = cam.step(now);
   if (anim && now >= anim.end) {
     anim = null;
@@ -77,9 +107,9 @@ function frame(now: number) {
       showResult();
     }
   }
-  // 描画で例外が起きてもアニメーションが止まらないよう、次のフレームを先に予約する
-  if (camMoving || anim) requestRender();
+  const moving = camMoving || anim !== null;
   renderer.draw(scene(), now);
+  return moving;
 }
 
 function insets() {
@@ -130,6 +160,7 @@ function tryPlay(x: number, y: number, byCpu = false): boolean {
   if (!events) return false;
   const move = events[0] as Extract<GameEvent, { type: 'move' }>;
   startAnim(color, move, before);
+  emit('move', { by: byCpu ? 'cpu' : 'human', color, x, y, flips: move.flips.length, moveCount: game.moveCount });
   legal = game.over ? [] : game.legalMoves();
   hover = null;
   for (const e of events) handleEvent(e);
@@ -145,6 +176,12 @@ async function cpuTurn() {
   const id = gameId;
   cpuThinking = true;
   updateHud();
+  if (manual) {
+    // 撮影中はその場で考え、ゲーム内の時間で同じだけ間を置いてから打つ（step で打つ）
+    const res = chooseMove(toPosition(game), mode.cpu, () => Math.random());
+    pendingCpu = { res, at: clock() + CONFIG.cpu.minThinkMs, id };
+    return;
+  }
   const started = performance.now();
   const res = await cpu.think(game, mode.cpu);
   if (id !== gameId) return;
@@ -169,14 +206,14 @@ function startAnim(color: Color, move: Extract<GameEvent, { type: 'move' }>, bef
     return { x: f.x, y: f.y, from: before.get(`${f.x},${f.y}`)!, to: color, delay: a.flipStartMs + (d - 1) * a.flipStepMs };
   });
   const last = flips.reduce((m, f) => Math.max(m, f.delay), 0);
-  const start = performance.now();
+  const start = clock();
   sound.place(color === 'B' ? 1 : 1.12);
-  // 同じ距離の石は同時に裏返るので、距離ごとに1回、色が変わる瞬間に鳴らす
+  // 同じ距離の石は同時に裏返るので、距離ごとに1回、色が変わる瞬間に鳴らす（tick で鳴らす）
   const byDelay = new Map<number, number>();
   for (const f of flips) byDelay.set(f.delay, (byDelay.get(f.delay) ?? 0) + 1);
-  [...byDelay.keys()]
+  flipSounds = [...byDelay.keys()]
     .sort((p, q) => p - q)
-    .forEach((delay, step) => sound.flip(step, byDelay.get(delay)!, (delay + a.flipDurMs / 2) / animSpeed / 1000));
+    .map((delay, step) => ({ at: delay + a.flipDurMs / 2, step, count: byDelay.get(delay)! }));
   anim = {
     start,
     speed: animSpeed,
@@ -189,12 +226,14 @@ function startAnim(color: Color, move: Extract<GameEvent, { type: 'move' }>, bef
 function handleEvent(e: GameEvent) {
   switch (e.type) {
     case 'pass':
+      emit('pass', { by: isCpu(e.color) ? 'cpu' : 'human' });
       toast(`${who(e.color)}は置ける場所がないのでパス。${who(opponent(e.color))}が続けて打ちます`);
       break;
     case 'outOfStones':
       toast(`${who(e.color)}は手持ちの石を使い切りました。${who(opponent(e.color))}が続けて打ちます`);
       break;
     case 'end':
+      emit('end', { winner: e.winner === 'draw' ? 'draw' : isCpu(e.winner) ? 'cpu' : 'human', black: e.black, white: e.white });
       pendingResult = true;
       break;
   }
@@ -258,6 +297,9 @@ function newGame(next: Mode = mode) {
   pendingResult = false;
   $('result').hidden = true;
   $('setup').hidden = true;
+  $('title').hidden = true;
+  pendingCpu = null;
+  flipSounds = [];
   resetCamera();
   updateHud();
   requestRender();
@@ -333,8 +375,8 @@ function showTitle() {
 
 // ---------- 入力 ----------
 
-attachInput(canvas, cam, {
-  onTap(sx, sy) {
+const handlers = {
+  onTap(sx: number, sy: number) {
     const mm = renderer.minimapHit(sx, sy, scene());
     if (mm) {
       cam.centerOn(mm[0], mm[1]);
@@ -346,7 +388,7 @@ attachInput(canvas, cam, {
     if (isCpu(game.turn)) toast('コンピュータが考えています', 1200);
     else if (!game.get(x, y)) toast('そこには置けません', 1200);
   },
-  onHover(sx, sy) {
+  onHover(sx: number, sy: number) {
     const [x, y] = cam.cellAt(sx, sy);
     const h = legal.find((m) => m.x === x && m.y === y) ? { x, y } : null;
     if (h?.x !== hover?.x || h?.y !== hover?.y) {
@@ -361,7 +403,8 @@ attachInput(canvas, cam, {
   onCameraChange() {
     requestRender();
   },
-});
+};
+attachInput(canvas, cam, handlers);
 
 $('btn-new').addEventListener('click', () => openSetup());
 $('btn-new-result').addEventListener('click', () => openSetup());
@@ -419,8 +462,70 @@ window.__game = {
   newGame: (m?: Mode) => newGame(m),
   openSetup,
   fitAll,
-  get audio() {
-    return sound.state;
+
+  // ---- 告知動画の撮影用（tools/promo）。ゲームの遊び方は変えない ----
+  /** true の間、requestAnimationFrame では進めず、step(dt) でゲーム内の時間を進める */
+  manual(on: boolean) {
+    if (on && !manual) virtualMs = performance.now();
+    manual = on;
+    if (!on) requestRender();
+  },
+  /** ゲーム内の時間を dt 秒進めて描く。CPU の手もここで打つ */
+  step(dt: number) {
+    virtualMs += dt * 1000;
+    if (pendingCpu && pendingCpu.id === gameId && virtualMs >= pendingCpu.at && !anim) {
+      const { res } = pendingCpu;
+      pendingCpu = null;
+      cpuThinking = false;
+      if (res) {
+        lastThink = res;
+        tryPlay(res.x, res.y, true);
+      } else updateHud();
+    }
+    tick(virtualMs);
+  },
+  drainEvents() {
+    const e = promoEvents;
+    promoEvents = [];
+    return e;
+  },
+  audio: {
+    capture(on: boolean) {
+      sound.capturing = on;
+    },
+    drain(): SfxCall[] {
+      const c = sound.captured;
+      sound.captured = [];
+      return c;
+    },
+    render: renderSfx,
+  },
+  /** BGM を動画に入れる（今の時刻から seconds 秒、音量 volume） */
+  promoBgm(volume: number, seconds: number) {
+    if (sound.capturing) sound.captured.push({ name: 'bgm', args: [volume, seconds] });
+  },
+  /** 今の手番側にとって、指定した強さのコンピュータが選ぶ手（撮影で「あなた」の手を決めるため） */
+  bestMove(level: Level) {
+    const r = chooseMove(toPosition(game), level, () => Math.random());
+    return r && { x: r.x, y: r.y };
+  },
+  /** ポインタ操作と同じ処理（座標は画面の CSS ピクセル）。少しの移動ならタップ、それ以上はドラッグで移動 */
+  touchDown(x: number, y: number) {
+    touch = { x0: x, y0: y, x, y, moved: false };
+  },
+  touchMove(x: number, y: number) {
+    if (!touch) return;
+    if (Math.hypot(x - touch.x0, y - touch.y0) > CONFIG.input.tapSlopPx) touch.moved = true;
+    if (touch.moved) {
+      cam.pan(x - touch.x, y - touch.y);
+      handlers.onCameraChange();
+    }
+    touch.x = x;
+    touch.y = y;
+  },
+  touchUp(x: number, y: number) {
+    if (touch && !touch.moved) handlers.onTap(x, y);
+    touch = null;
   },
   /** 音量確認用：BGM（と効果音）を書き出し、音量と WAV（base64）を返す */
   async renderAudio(seconds: number, withSe: boolean) {
@@ -441,6 +546,7 @@ window.__game = {
     endReason: game.endReason,
     legal: legal.length,
     resultShown: !$('result').hidden,
+    animating: anim !== null,
     setupShown: !$('setup').hidden,
     titleShown: !$('title').hidden,
     cpuThinking,

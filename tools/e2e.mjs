@@ -111,7 +111,7 @@ try {
 
     // ---- CPU が先手（あなたは白）: CPU が先に打つ ----
     await page.click('#btn-start');
-    await page.waitForFunction(() => window.__game.audio.context === 'running');
+    await page.waitForFunction(() => window.__game.state().audio.context === 'running');
     s = await state();
     check(s.audio.bgm && s.audio.enabled, '「はじめる」で音が有効になり BGM が始まる');
     await waitHumanTurn();
@@ -120,11 +120,11 @@ try {
 
     // 音の ON / OFF
     await page.click('#btn-sound');
-    await page.waitForFunction(() => window.__game.audio.context === 'suspended');
+    await page.waitForFunction(() => window.__game.state().audio.context === 'suspended');
     s = await state();
     check(!s.audio.enabled && !s.audio.bgm && (await page.textContent('#btn-sound')) === '音 OFF', '「音 OFF」で BGM が止まり、音声処理も止まる');
     await page.click('#btn-sound');
-    await page.waitForFunction(() => window.__game.audio.context === 'running');
+    await page.waitForFunction(() => window.__game.state().audio.context === 'running');
     s = await state();
     check(s.audio.enabled && s.audio.bgm && (await page.textContent('#btn-sound')) === '音 ON', '「音 ON」で BGM が再開する');
 

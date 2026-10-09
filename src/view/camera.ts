@@ -12,6 +12,8 @@ export class Camera {
   cell = 48;
   width = 1;
   height = 1;
+  /** 現在時刻（ミリ秒）。告知動画の撮影中はゲーム内の時計に差し替える */
+  clock: () => number = () => performance.now();
 
   private anim: { from: [number, number, number]; to: [number, number, number]; start: number } | null = null;
 
@@ -62,7 +64,7 @@ export class Camera {
     // 安全領域の中心に合わせるため、上下の余白差だけ中心をずらす
     const cy = (minY + maxY) / 2 - (inset.top - inset.bottom) / 2 / cell;
     if (animate) {
-      this.anim = { from: [this.cx, this.cy, this.cell], to: [cx, cy, cell], start: performance.now() };
+      this.anim = { from: [this.cx, this.cy, this.cell], to: [cx, cy, cell], start: this.clock() };
     } else {
       this.anim = null;
       this.cx = cx;
@@ -72,7 +74,7 @@ export class Camera {
   }
 
   centerOn(wx: number, wy: number): void {
-    this.anim = { from: [this.cx, this.cy, this.cell], to: [wx, wy, this.cell], start: performance.now() };
+    this.anim = { from: [this.cx, this.cy, this.cell], to: [wx, wy, this.cell], start: this.clock() };
   }
 
   /** カメラ移動アニメーションを進める。まだ動いていれば true */

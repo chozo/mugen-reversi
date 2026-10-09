@@ -237,9 +237,36 @@ export function scheduleBgmStep(ctx: Ctx, bus: BgmBus, step: number, t: number) 
 
 // ---------- 再生の管理 ----------
 
+/** 効果音の呼び出し（告知動画の撮影で記録し、書き出し時に鳴らし直す） */
+export interface SfxCall {
+  name: 'place' | 'flip' | 'bgm';
+  args: number[];
+}
+
+/**
+ * 記録した呼び出しを、渡された AudioContext の時刻 when に鳴らす（告知動画の書き出し用）。
+ * 普段の再生と同じ合成関数・音量を使う。'bgm' は args = [音量, 秒数]
+ */
+export function renderSfx(ctx: BaseAudioContext, name: SfxCall['name'], args: number[], when: number): void {
+  const out = ctx.createGain();
+  out.connect(ctx.destination);
+  if (name === 'bgm') {
+    out.gain.value = args[0];
+    const bus = createBgmBus(ctx, out);
+    for (let step = 0, t = when; t < when + args[1]; step++, t += STEP) scheduleBgmStep(ctx, bus, step, t);
+    return;
+  }
+  out.gain.value = CONFIG.audio.master * CONFIG.audio.se;
+  if (name === 'place') playPlace(ctx, out, when, args[0]);
+  else playFlip(ctx, out, when, args[0], args[1]);
+}
+
 export class Sound {
   ctx: AudioContext | null = null;
   enabled = true;
+  /** true の間は鳴らさずに記録する（告知動画の撮影用） */
+  capturing = false;
+  captured: SfxCall[] = [];
   private master!: GainNode;
   private se!: GainNode;
   private bgmGain!: GainNode;
@@ -339,14 +366,22 @@ export class Sound {
   }
 
   place(pitch = 1): void {
+    if (this.capturing) {
+      this.captured.push({ name: 'place', args: [pitch] });
+      return;
+    }
     const ctx = this.ready();
     if (ctx) playPlace(ctx, this.se, ctx.currentTime + 0.005, pitch);
   }
 
-  /** delaySec 秒後に裏返る音 */
-  flip(step: number, count: number, delaySec: number): void {
+  /** 石が裏返る音（裏返る瞬間に呼ぶ） */
+  flip(step: number, count: number): void {
+    if (this.capturing) {
+      this.captured.push({ name: 'flip', args: [step, count] });
+      return;
+    }
     const ctx = this.ready();
-    if (ctx) playFlip(ctx, this.se, ctx.currentTime + delaySec, step, count);
+    if (ctx) playFlip(ctx, this.se, ctx.currentTime + 0.005, step, count);
   }
 
   /** 自動テスト用の状態 */

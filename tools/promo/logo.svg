@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- 初期配置の4石。マスは方眼で、外へ続いていくように線を伸ばす -->
+  <path d="M0 20.5H120M0 60.5H120M0 100.5H120M20.5 0V120M60.5 0V120M100.5 0V120" stroke="#fff" stroke-opacity="0.8" stroke-width="3" />
+  <circle cx="40.5" cy="40.5" r="16" fill="#fbfbf8" stroke="#8d897e" stroke-width="3" />
+  <circle cx="80.5" cy="40.5" r="16" fill="#1d1d1f" stroke="#4a4a4f" stroke-width="3" />
+  <circle cx="40.5" cy="80.5" r="16" fill="#1d1d1f" stroke="#4a4a4f" stroke-width="3" />
+  <circle cx="80.5" cy="80.5" r="16" fill="#fbfbf8" stroke="#8d897e" stroke-width="3" />
+</svg>
