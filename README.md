@@ -120,6 +120,7 @@ BGM と効果音は、音源ファイルを使わず Web Audio API でその場�
 - **Vitest**: ルールとコンピュータの単体テスト。
 - **playwright-core** + インストール済みの Chrome: ブラウザでの動作確認（`tools/e2e.mjs`）。
 - **wrangler**: Cloudflare Workers（静的アセット）への公開。
+- **ffmpeg-static**: 告知動画の書き出し（`npm run promo`）。
 - 実行時の依存ライブラリはない（devDependencies のみ）。
 
 ```text
@@ -228,6 +229,7 @@ PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開�
 - [ ] 人がコンピュータと実際にプレイしての検証（未実施）
 - [x] スマホ実機での動作確認（2026-10-10。開発サーバをスマホで開き、快適に遊べることを確認）
 - [x] 公開（Cloudflare Workers・GitHub）、MIT ライセンス、ページ説明と OGP
+- [x] 告知動画（縦型・約29秒、[告知動画](#告知動画)）。撮影用の入口を足した後も、単体テスト・`npm run e2e` が通ることを確認
 
 ## 発見したゲームデザイン上の問題
 
