@@ -4,7 +4,8 @@
 export default {
   fetch(request) {
     const url = new URL(request.url);
-    url.pathname = url.pathname.replace(/^\/mugen-othello(?=\/|$)/, '/mugen-reversi');
+    // 末尾スラッシュなしの /mugen-othello は、転送を1回で済ませるため /mugen-reversi/ へ
+    url.pathname = url.pathname === '/mugen-othello' ? '/mugen-reversi/' : url.pathname.replace(/^\/mugen-othello\//, '/mugen-reversi/');
     return Response.redirect(url.toString(), 301);
   },
 };
