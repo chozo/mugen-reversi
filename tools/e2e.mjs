@@ -1,6 +1,7 @@
 // ブラウザでの動作確認。ビルド済みの dist を vite preview で配信し、
 // インストール済みの Chrome（ヘッドレス）で操作する。
 // 実行: npm run build && npm run e2e   （スクリーンショットは E2E_OUT または OS の一時ディレクトリへ）
+// 公開URLを確認するとき: E2E_URL=https://game.chozo.net/mugen-othello/ npm run e2e
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -8,7 +9,7 @@ import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 
 const PORT = 4179;
-const URL = `http://localhost:${PORT}/`;
+const URL = process.env.E2E_URL ?? `http://localhost:${PORT}/`;
 const OUT = process.env.E2E_OUT ?? join(tmpdir(), 'mugen-othello-e2e');
 const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 mkdirSync(OUT, { recursive: true });
@@ -19,12 +20,15 @@ const check = (cond, msg) => {
   if (!cond) failures++;
 };
 
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
-await new Promise((resolve, reject) => {
-  server.stdout.on('data', (d) => d.toString().includes('localhost') && resolve());
-  server.on('exit', () => reject(new Error('preview server exited')));
-  setTimeout(() => reject(new Error('preview server timeout')), 15000);
-});
+// E2E_URL を指定しなければ、ビルド済みの dist を手元で配信する
+const server = process.env.E2E_URL ? null : spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+if (server) {
+  await new Promise((resolve, reject) => {
+    server.stdout.on('data', (d) => d.toString().includes('localhost') && resolve());
+    server.on('exit', () => reject(new Error('preview server exited')));
+    setTimeout(() => reject(new Error('preview server timeout')), 15000);
+  });
+}
 
 const browser = await chromium.launch({ executablePath: CHROME, headless: true });
 
@@ -301,7 +305,7 @@ try {
   }
 } finally {
   await browser.close();
-  server.kill();
+  server?.kill();
 }
 
 console.log(`\nスクリーンショット: ${OUT}`);

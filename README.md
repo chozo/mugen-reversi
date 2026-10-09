@@ -174,7 +174,7 @@ npm run deploy     # build してから Cloudflare Workers へ公開
 node tools/make-og.mjs  # OGP 画像を作り直す
 ```
 
-`npm run e2e` は macOS の Chrome（`/Applications/Google Chrome.app`）を使う。別の場所なら `CHROME_PATH` で指定する。スクリーンショットは `E2E_OUT`（未指定なら OS の一時ディレクトリ）に保存する。
+`npm run e2e` は macOS の Chrome（`/Applications/Google Chrome.app`）を使う。`E2E_URL=https://game.chozo.net/mugen-othello/ npm run e2e` で公開URLに対しても実行できる。別の場所なら `CHROME_PATH` で指定する。スクリーンショットは `E2E_OUT`（未指定なら OS の一時ディレクトリ）に保存する。
 
 ## 公開
 
