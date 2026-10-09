@@ -52,9 +52,9 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
     ${circles}
   </svg>
   <div class="panel">
-    <div class="name">無限オセロ</div>
-    <div class="en">MUGEN OTHELLO</div>
-    <div class="lead">端のない盤面で、<b>32枚の石</b>を置いて戦うオセロ</div>
+    <div class="name">無限リバーシ</div>
+    <div class="en">MUGEN REVERSI</div>
+    <div class="lead">端のない盤面で、<b>32枚の石</b>を置いて戦うリバーシ</div>
   </div>
 </body></html>`;
 

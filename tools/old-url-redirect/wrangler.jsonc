@@ -1,0 +1,12 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // 以前の Worker と同じ名前で上書きし、旧URLのルートだけを担当する
+  "name": "mugen-othello",
+  "main": "index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "game.chozo.net/mugen-othello", "zone_name": "chozo.net" },
+    { "pattern": "game.chozo.net/mugen-othello/*", "zone_name": "chozo.net" }
+  ]
+}

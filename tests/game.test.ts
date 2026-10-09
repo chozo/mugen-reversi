@@ -31,7 +31,7 @@ function bruteForceLegal(g: Game, color: Color): string[] {
 }
 
 describe('初期配置', () => {
-  it('通常オセロと同じ 2×2 で黒から始まり、黒の合法手は4つ', () => {
+  it('通常リバーシと同じ 2×2 で黒から始まり、黒の合法手は4つ', () => {
     const g = new Game();
     expect(g.get(0, 0)).toBe('W');
     expect(g.get(1, 0)).toBe('B');

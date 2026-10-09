@@ -1,17 +1,17 @@
-# 無限オセロ（mugen othello）プロトタイプ
+# 無限リバーシ（mugen reversi）プロトタイプ
 
-通常のオセロから「盤面の境界」だけを取り除いた、無限盤オセロのWebプロトタイプ。
+通常のリバーシから「盤面の境界」だけを取り除いた、無限盤リバーシのWebプロトタイプ。
 
-目的は完成品ではなく、**「角も辺も存在しないオセロは、ゲームとして面白いのか」** を実際にプレイして検証すること。
+目的は完成品ではなく、**「角も辺も存在しないリバーシは、ゲームとして面白いのか」** を実際にプレイして検証すること。
 
 コンピュータとの対戦専用（強さは4段階）。人同士の対戦はない。
 
-**遊ぶ: https://game.chozo.net/mugen-othello/**
+**遊ぶ: https://game.chozo.net/mugen-reversi/**
 
 ## コンセプト
 
 - 8×8 の盤では「角」と「辺」が強い場所になる。盤面そのものを無限にして、角と辺をなくす。
-- 変えるのは原則これだけ。石の数は通常のオセロと同じ（各32個）にして、**「有限の石 × 無限の盤面」** でどんなゲーム性が生まれるかを見る。
+- 変えるのは原則これだけ。石の数は通常のリバーシと同じ（各32個）にして、**「有限の石 × 無限の盤面」** でどんなゲーム性が生まれるかを見る。
 - 見た目も「盤の上に石を置く」のではなく、「無限の方眼空間に石を置く」感覚にする。盤の枠は描かない。
 
 ## 現在のルール
@@ -33,10 +33,10 @@
 
 ## タイトル画面
 
-起動するとタイトル画面を表示する。このオセロの特徴と操作方法を説明し、「あそぶ」で対戦設定へ進む。「あそぶ」は紹介文のすぐ下（スクロールせずに押せる位置）と、説明の最後の2か所にある。
+起動するとタイトル画面を表示する。このリバーシの特徴と操作方法を説明し、「あそぶ」で対戦設定へ進む。「あそぶ」は紹介文のすぐ下（スクロールせずに押せる位置）と、説明の最後の2か所にある。
 
-- 紹介文: 「無限に広がる盤面で、通常のオセロと同じ32枚の石を置いて戦うオセロです。」
-- 特徴: 盤面に端がない／石は32枚ずつ（置けるのは30枚、返されても手持ちは増えない）／ルールはオセロのまま
+- 紹介文: 「無限に広がる盤面で、通常のリバーシと同じ32枚の石を置いて戦うリバーシです。」
+- 特徴: 盤面に端がない／石は32枚ずつ（置けるのは30枚、返されても手持ちは増えない）／ルールはリバーシのまま
 - 操作方法: 石を置く・盤面を動かす・拡大縮小・全体を見る（スマホと PC の両方）
 - ひとこと: 「盤面を広く使って、全体の戦況を確かめながら戦いましょう。」と、画面外の合法手の赤い点の説明
 - 盤面のイラスト（SVG）は、グリッドが端に向かって消え、遠くの石ほど薄くなる。無限に続く盤面を表す
@@ -149,7 +149,8 @@ app/
     ├── simulate.ts       # 単純な戦略の自動対局による傾向の測定
     ├── ai-match.ts       # コンピュータの強さ同士の対局
     ├── make-og.mjs       # OGP 画像（public/og.png）を作る
-    └── promo/            # 告知動画の撮影（record.mjs・stage.js・promo.css・scenario.js・logo.svg）
+    ├── promo/            # 告知動画の撮影（record.mjs・stage.js・promo.css・scenario.js・logo.svg）
+    └── old-url-redirect/ # 旧URL /mugen-othello/ から新URLへの転送（別の Worker）
 ├── wrangler.jsonc        # Cloudflare Workers の設定
 └── LICENSE
 ```
@@ -168,7 +169,7 @@ app/
 npm install
 npm run dev        # 開発サーバ（--host 付きなので同じネットワークのスマホから開ける）
 npm test           # ルールの単体テスト
-npm run build      # 型チェック + dist/mugen-othello/ へ出力
+npm run build      # 型チェック + dist/mugen-reversi/ へ出力
 npm run e2e        # ブラウザでの動作確認（先に npm run build）
 npm run sim        # 自動対局で傾向を測る（npm run sim -- 1000 で局数を指定）
 npm run sim:ai     # コンピュータの強さ同士を対局させる（npm run sim:ai -- 20 で局数を指定。げきむずは1手2秒かかる）
@@ -177,7 +178,7 @@ node tools/make-og.mjs  # OGP 画像を作り直す
 npm run promo      # 告知動画を作る（下の「告知動画」を参照）
 ```
 
-`npm run e2e` は macOS の Chrome（`/Applications/Google Chrome.app`）を使う。`E2E_URL=https://game.chozo.net/mugen-othello/ npm run e2e` で公開URLに対しても実行できる。別の場所なら `CHROME_PATH` で指定する。スクリーンショットは `E2E_OUT`（未指定なら OS の一時ディレクトリ）に保存する。
+`npm run e2e` は macOS の Chrome（`/Applications/Google Chrome.app`）を使う。`E2E_URL=https://game.chozo.net/mugen-reversi/ npm run e2e` で公開URLに対しても実行できる。別の場所なら `CHROME_PATH` で指定する。スクリーンショットは `E2E_OUT`（未指定なら OS の一時ディレクトリ）に保存する。
 
 ## 告知動画
 
@@ -190,7 +191,7 @@ PROMO_ENCODE_ONLY=1 npm run promo    # 撮り直さずに、音と書き出し�
 PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開で撮る
 ```
 
-- 出力先はアプリのフォルダの隣の `../video/`（リポジトリには含めない）: `mugen-othello-promo.mp4`（本編）、`-cover.jpg`（表紙）、`-sheet.jpg`（2秒おきの一覧）。途中ファイルは `../video/work/`。
+- 出力先はアプリのフォルダの隣の `../video/`（リポジトリには含めない）: `mugen-reversi-promo.mp4`（本編）、`-cover.jpg`（表紙）、`-sheet.jpg`（2秒おきの一覧）。途中ファイルは `../video/work/`。
 - 構成（`tools/promo/scenario.js`）: スローで16枚を一気にひっくり返すつかみ → タイトル → 最初から実際のプレイ（タップで置く・早送りで盤面が広がる・スワイプで移動）→ 終盤「最後の1手まで逆転あり！」→「勝った〜！」→ エンドカード（公開URL）。
 - 「あなた」（白）の手は、台本の中で「多く返せて盤面の中心に近い手」を選んでタップする（強いコンピュータ同士だと直線を伸ばし合う細長い盤面になり、画面映えしないため）。最後の数手だけコンピュータ（つよい）の読みを使う。相手はコンピュータ（ふつう）。種 5 で、あなたが白34-黒30で勝つ展開になる。
 - 音: ゲームの BGM と効果音を、普段と同じ合成関数で書き出し、-14 LUFS・真のピーク約 -2 dBTP に合わせる。外部の音源は使っていない。
@@ -198,10 +199,11 @@ PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開�
 
 ## 公開
 
-- 公開URL: **https://game.chozo.net/mugen-othello/**
-- GitHub: https://github.com/chozo/mugen-othello
-- 英字名（slug）は `mugen-othello`。GitHub リポジトリ名・Worker 名・公開URLのパス・ビルドの出力先（`dist/mugen-othello/`）にそろえている。
-- Cloudflare Workers の静的アセットとして公開している（`npm run deploy`）。game.chozo.net の他のゲームと同じく、`game.chozo.net/mugen-othello` と `game.chozo.net/mugen-othello/*` のルートだけを担当し、workers.dev の URL は使わない（`workers_dev: false`）。`/mugen-othello` は `/mugen-othello/` に転送される。
+- 公開URL: **https://game.chozo.net/mugen-reversi/**
+- GitHub: https://github.com/chozo/mugen-reversi
+- 英字名（slug）は `mugen-reversi`。GitHub リポジトリ名・Worker 名・公開URLのパス・ビルドの出力先（`dist/mugen-reversi/`）にそろえている。
+- Cloudflare Workers の静的アセットとして公開している（`npm run deploy`）。game.chozo.net の他のゲームと同じく、`game.chozo.net/mugen-reversi` と `game.chozo.net/mugen-reversi/*` のルートだけを担当し、workers.dev の URL は使わない（`workers_dev: false`）。`/mugen-reversi` は `/mugen-reversi/` に転送される。
+- 旧URL（`game.chozo.net/mugen-othello/…`、「無限オセロ」だったころ）は、小さな Worker（`tools/old-url-redirect/`、Worker 名 `mugen-othello`）で新URLへ 301 転送している。公開は `npx wrangler deploy --config tools/old-url-redirect/wrangler.jsonc`。
 - ページの説明文と OGP（タイトル・説明・画像 `og.png`）を設定している。リンクをシェアすると画像付きで表示される。
 - 自動テスト用の入口 `window.__game` は本番にも残している。開発ツールから着手などができるが、端末の中だけで完結するゲームなので影響はない（告知動画の撮影にも使う）。
 
@@ -255,7 +257,7 @@ PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開�
 
 ### 2. 「相手の打てる場所を減らす」戦略が通用しない
 
-- 通常のオセロでは、相手の合法手を減らす（機動力を奪う）戦略が強い。この盤では、それが「最も多く返す」戦略に大敗した（96〜99%）。
+- 通常のリバーシでは、相手の合法手を減らす（機動力を奪う）戦略が強い。この盤では、それが「最も多く返す」戦略に大敗した（96〜99%）。
 - 盤が無限なので、相手を打てなくする（パスさせる）ことがほぼできない。合法手を減らしても、相手にはどこかに打つ場所が残る。
 - 単純に多く返す手が強いだけのゲームになっていないかは、人が実際にプレイして確かめる必要がある。
 
@@ -277,14 +279,14 @@ PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開�
 
 ### 6. 終盤に「盤を埋める」局面がない
 
-- 通常のオセロの終盤は、残った空きマスの順番の読み合いになる。無限盤では空きマスが尽きないため、この種類の読みがない。
+- 通常のリバーシの終盤は、残った空きマスの順番の読み合いになる。無限盤では空きマスが尽きないため、この種類の読みがない。
 - 終盤の戦略性は「残り手数（手持ち）を見ながら、最後の数手でどれだけ返すか」に集まる可能性がある。
 
 ## 今後検証したい項目
 
 実際のプレイで、次を確かめる。
 
-1. 角と辺がなくてもオセロとして成立するか
+1. 角と辺がなくてもリバーシとして成立するか
 2. 戦線が一方向へ伸び続けるだけのゲームにならないか
 3. 盤面を広げる戦略に意味があるか（離れた場所に打つ・まとめて打つの違い）
 4. 盤面が広がりすぎて状況把握が困難にならないか（ミニマップ・全体表示で足りるか）
@@ -309,4 +311,4 @@ PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開�
 
 外部の素材（画像・フォント・音源）は使っていません。盤面と石は Canvas で描き、タイトルの絵は SVG、BGM と効果音は Web Audio で合成しています。
 
-「無限オセロ」「chozo」の名前やロゴを、作者が関わっているように見える形で使わないでください。「オセロ」は株式会社メガハウスの登録商標です。
+「無限リバーシ」「chozo」の名前やロゴを、作者が関わっているように見える形で使わないでください。名前に「オセロ」を使わないのは、「オセロ」が株式会社メガハウスの登録商標のためです（2026-10-10 に「無限オセロ」から改名し、URL も /mugen-othello/ から /mugen-reversi/ に変えました）。

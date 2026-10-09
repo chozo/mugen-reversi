@@ -1,7 +1,7 @@
 // ブラウザでの動作確認。ビルド済みの dist を vite preview で配信し、
 // インストール済みの Chrome（ヘッドレス）で操作する。
 // 実行: npm run build && npm run e2e   （スクリーンショットは E2E_OUT または OS の一時ディレクトリへ）
-// 公開URLを確認するとき: E2E_URL=https://game.chozo.net/mugen-othello/ npm run e2e
+// 公開URLを確認するとき: E2E_URL=https://game.chozo.net/mugen-reversi/ npm run e2e
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -10,7 +10,7 @@ import { chromium } from 'playwright-core';
 
 const PORT = 4179;
 const URL = process.env.E2E_URL ?? `http://localhost:${PORT}/`;
-const OUT = process.env.E2E_OUT ?? join(tmpdir(), 'mugen-othello-e2e');
+const OUT = process.env.E2E_OUT ?? join(tmpdir(), 'mugen-reversi-e2e');
 const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 mkdirSync(OUT, { recursive: true });
 

@@ -364,7 +364,7 @@ $('btn-howto').addEventListener('click', showTitle);
 $('btn-play-top').addEventListener('click', () => openSetup());
 $('btn-play').addEventListener('click', () => openSetup());
 
-/** タイトル画面（このオセロの特徴と操作方法） */
+/** タイトル画面（このリバーシの特徴と操作方法） */
 function showTitle() {
   $('setup').hidden = true;
   $('result').hidden = true;

@@ -1,18 +1,18 @@
-// 無限オセロの告知動画の台本。ポップで楽しい雰囲気に。
+// 無限リバーシの告知動画の台本。ポップで楽しい雰囲気に。
 // 「あなた」（白・後手）の手は pickMove で選び、画面上の位置をタップする。
 // 強いコンピュータ同士だと直線を伸ばし合う細長い盤面になり、画面映えしないので、
 // 「多く返せる・盤面の中心に近い」手を選んで、白黒が入り混じる密な盤面にする。相手はコンピュータ（ふつう）。字幕は時刻で決め打ちせず、着手・終局の出来事に合わせる。
 // 使える操作はスキルの references/scenario-api.md を参照。
 
 export const config = {
-  slug: 'mugen-othello',
-  url: 'https://game.chozo.net/mugen-othello/',
+  slug: 'mugen-reversi',
+  url: 'https://game.chozo.net/mugen-reversi/',
   orientation: 'portrait',
   game: { width: 390, height: 693 },
   // 字幕を上に出すので、ゲーム画面は少し下に置く
   layout: { centerX: 0.47, centerY: 0.5, maxW: 0.72, maxH: 0.6 },
   serveDir: 'dist',
-  gamePath: '/mugen-othello/',
+  gamePath: '/mugen-reversi/',
   // BGM はゲームの BGM（__game.promoBgm）を効果音と同じ経路で書き出す
   music: false,
 };
@@ -124,7 +124,7 @@ export default async function scenario(p) {
   p.flash({ dur: 0.3, strength: 0.8 });
 
   // ---------- 2.4〜5.6秒 タイトル ----------
-  p.title({ title: '無限オセロ', sub: '端のない盤面で\n32枚の石の陣取り！', logo: 'logo.svg', dur: 3.2 });
+  p.title({ title: '無限リバーシ', sub: '端のない盤面で\n32枚の石の陣取り！', logo: 'logo.svg', dur: 3.2 });
   await p.wait(3.4);
 
   // ---------- 5.6〜 実際のプレイ（最初から） ----------
@@ -206,6 +206,6 @@ export default async function scenario(p) {
   p.off('end');
 
   // ---------- エンドカード ----------
-  p.endCard({ title: '無限オセロ', sub: 'CPUと対戦・4段階の強さ', cta: '今すぐ遊べる！', logo: 'logo.svg' });
+  p.endCard({ title: '無限リバーシ', sub: 'CPUと対戦・4段階の強さ', cta: '今すぐ遊べる！', logo: 'logo.svg' });
   await p.wait(3);
 }

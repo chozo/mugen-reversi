@@ -1,15 +1,15 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "mugen-othello",
+  "name": "mugen-reversi",
   "compatibility_date": "2026-10-01",
   // game.chozo.net の他のゲームと同じく、パス配下だけで公開する
   "workers_dev": false,
   "observability": { "enabled": true, "head_sampling_rate": 1 },
   // 静的アセットだけを配信（Worker スクリプトなし）。
-  // URL の /mugen-othello/ に合わせ、dist/mugen-othello/ に出力している
+  // URL の /mugen-reversi/ に合わせ、dist/mugen-reversi/ に出力している
   "assets": { "directory": "./dist" },
   "routes": [
-    { "pattern": "game.chozo.net/mugen-othello", "zone_name": "chozo.net" },
-    { "pattern": "game.chozo.net/mugen-othello/*", "zone_name": "chozo.net" }
+    { "pattern": "game.chozo.net/mugen-reversi", "zone_name": "chozo.net" },
+    { "pattern": "game.chozo.net/mugen-reversi/*", "zone_name": "chozo.net" }
   ]
 }

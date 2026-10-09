@@ -1,4 +1,4 @@
-// 無限盤オセロのルール本体。描画やDOMに依存しない純粋なロジック。
+// 無限盤リバーシのルール本体。描画やDOMに依存しない純粋なロジック。
 // 盤面は Map<"x,y", Color> で持ち、負を含む任意の整数座標を扱う。
 
 export type Color = 'B' | 'W';
@@ -56,7 +56,7 @@ export const opponent = (c: Color): Color => (c === 'B' ? 'W' : 'B');
 export interface GameOptions {
   /** 各プレイヤーがゲーム中に新しく置ける石の数（初期配置分を除く） */
   stock?: number;
-  /** 初期配置。省略時は通常オセロと同じ 2×2 */
+  /** 初期配置。省略時は通常リバーシと同じ 2×2 */
   initial?: Array<[number, number, Color]>;
   first?: Color;
 }
