@@ -1,5 +1,5 @@
 // SNS でシェアされたときの画像（OGP, 1200×630）を作る。
-// 実行: node tools/make-og.mjs   → public/og.png
+// 実行: node tools/make-og.mjs   → public/ogp.png
 import { chromium } from 'playwright-core';
 
 const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -61,6 +61,6 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
 const browser = await chromium.launch({ executablePath: CHROME, headless: true });
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 await page.setContent(html);
-await page.screenshot({ path: new URL('../public/og.png', import.meta.url).pathname });
+await page.screenshot({ path: new URL('../public/ogp.png', import.meta.url).pathname });
 await browser.close();
-console.log('public/og.png');
+console.log('public/ogp.png');

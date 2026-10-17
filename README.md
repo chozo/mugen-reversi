@@ -128,7 +128,7 @@ app/
 ├── index.html            # タイトル画面・対戦設定の HTML、ページ説明と OGP
 ├── public/
 │   ├── favicon.svg
-│   └── og.png            # SNS でシェアされたときの画像（tools/make-og.mjs で作る）
+│   └── ogp.png           # SNS でシェアされたときの画像（tools/make-og.mjs で作る）
 ├── src/
 │   ├── core/game.ts      # ルール本体（DOM に依存しない）
 │   ├── ai/search.ts      # コンピュータの思考（探索用の盤面・アルファベータ探索・強さの設定）
@@ -148,7 +148,7 @@ app/
     ├── e2e.mjs           # ブラウザでの動作確認
     ├── simulate.ts       # 単純な戦略の自動対局による傾向の測定
     ├── ai-match.ts       # コンピュータの強さ同士の対局
-    ├── make-og.mjs       # OGP 画像（public/og.png）を作る
+    ├── make-og.mjs       # OGP 画像（public/ogp.png）を作る
     └── promo/            # 告知動画の撮影（record.mjs・stage.js・promo.css・scenario.js・logo.svg）
 ├── wrangler.jsonc        # Cloudflare Workers の設定
 └── LICENSE
@@ -203,7 +203,7 @@ PROMO_SEED=4 npm run promo           # 乱数の種を変えて、別の展開�
 - 英字名（slug）は `mugen-reversi`。GitHub リポジトリ名・Worker 名・公開URLのパス・ビルドの出力先（`dist/mugen-reversi/`）にそろえている。
 - Cloudflare Workers の静的アセットとして公開している（`npm run deploy`）。game.chozo.net の他のゲームと同じく、`game.chozo.net/mugen-reversi` と `game.chozo.net/mugen-reversi/*` のルートだけを担当し、workers.dev の URL は使わない（`workers_dev: false`）。`/mugen-reversi` は `/mugen-reversi/` に転送される。
 - 旧URL（`game.chozo.net/mugen-othello/…`、「無限オセロ」だったころ）は、新URLへ 301 転送する Worker（`mugen-othello`）を置いていたが、使われていないため 2026-10-17 に削除した。
-- ページの説明文と OGP（タイトル・説明・画像 `og.png`）を設定している。リンクをシェアすると画像付きで表示される。
+- ページの説明文と OGP（タイトル・説明・画像 `ogp.png`）を設定している。リンクをシェアすると画像付きで表示される。
 - 自動テスト用の入口 `window.__game` は本番にも残している。開発ツールから着手などができるが、端末の中だけで完結するゲームなので影響はない（告知動画の撮影にも使う）。
 
 ## 実装状況
